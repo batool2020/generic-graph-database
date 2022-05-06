@@ -28,5 +28,10 @@ public class Vertex<T>
     {
         return this.vertexId;
     }
+    
+    public void setvertexType(T vertexType)
+    {
+    	this.vertexType = vertexType;
+    }
 
 }
