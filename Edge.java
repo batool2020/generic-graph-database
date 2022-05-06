@@ -14,11 +14,11 @@ public class Edge<T>
         this.weight = 0;
         this.data = null;
     }
-    public Edge(Vertex start, Vertex end, int weight, T data)
+    public Edge(Vertex start, Vertex end, T type, T data)
     {
         this.from = start;
         this.to = end;
-        this.weight = weight;
+        this.type = type;
         this.data = data;
     }
     public Vertex getStart()
