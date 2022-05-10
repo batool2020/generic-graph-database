@@ -1,6 +1,7 @@
-package problem;
-import problem.Vertex;
-import problem.Edge;
+package Problem;
+import Problem.Vertex;
+import support.QueueInterface;
+import Problem.Edge;
 import java.util.ArrayList;
 public class Graph<T> implements GraphInterface<T>
 {
@@ -8,7 +9,7 @@ public class Graph<T> implements GraphInterface<T>
     private static final int DEFCAP = 50;  // default capacity
     private boolean directed;
     private boolean weighted;
-    private int numVertices;
+    private int numVertices=0;
     private Vertex[] vertices = new Vertex[DEFCAP];
     private Edge[] edges = new Edge[DEFCAP];
     private ArrayList<ArrayList<Vertex>> adjList;
@@ -50,12 +51,16 @@ public class Graph<T> implements GraphInterface<T>
             return false;
         }
     }
-    public Vertex addVertex(T vertex, int vertexID)
+    /* we don't need the id to create vertex because it's incrementing the id automaticlly when we're creating new objects, 
+    /*
+     * so i've changed how we create vertex object and considered numVertices as the index of the vertex
+     */
+    public Vertex addVertex(T vertex)
     {
-        Vertex addition = new Vertex(vertex, vertexID);
-        vertices[vertexID] = addition;
+        Vertex addition = new Vertex(vertex);
+        vertices[numVertices] = addition;
         numVertices++;
-        System.out.println(vertices[vertexID].toString());
+        System.out.println(vertices[numVertices].getvertexType().toString());
         return addition;
     }
     public boolean hasVertex(int vertexID)
@@ -69,7 +74,8 @@ public class Graph<T> implements GraphInterface<T>
         }
         return false;
     }
-    public void addEdge(int fromID, int toID, T data)
+    // changed the arguments it takes - added type and data
+    public void addEdge(int fromID, int toID, T type, T data)
     {
         Vertex add1 = vertices[fromID];
         Vertex add2 = vertices[toID];
@@ -93,7 +99,7 @@ public class Graph<T> implements GraphInterface<T>
             int location2 = toID;
             adjList.get(location2).add(add1);
         }
-        Edge obj = new Edge(add1,add2,0);
+        Edge obj = new Edge(add1,add2,type, data);
         edges[edgeCount] = obj;
         edgeCount++;
     }
@@ -108,4 +114,47 @@ public class Graph<T> implements GraphInterface<T>
             System.out.println();
         }
     }
+	@Override
+	public boolean isFull() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean hasVertex(T vertex) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int weightIs(T fromVertex, T toVertex) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	@Override
+	public QueueInterface<T> getToVertices(T vertex) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public void clearMarks() {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void markVertex(T vertex) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public boolean isMarked(T vertex) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	@Override
+	public T getUnmarked() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 }
