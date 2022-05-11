@@ -1,15 +1,17 @@
-package Problem;
-import Problem.Vertex;
-import support.QueueInterface;
-import Problem.Edge;
+package problem;
+import problem.Vertex;
+import problem.Edge;
 import java.util.ArrayList;
+import java.io.*;
+import java.nio.file.Files;
+import java.util.Scanner;
 public class Graph<T> implements GraphInterface<T>
 {
     public static final int NULL_EDGE = 0;
     private static final int DEFCAP = 50;  // default capacity
     private boolean directed;
     private boolean weighted;
-    private int numVertices=0;
+    private int numVertices;
     private Vertex[] vertices = new Vertex[DEFCAP];
     private Edge[] edges = new Edge[DEFCAP];
     private ArrayList<ArrayList<Vertex>> adjList;
@@ -51,16 +53,12 @@ public class Graph<T> implements GraphInterface<T>
             return false;
         }
     }
-    /* we don't need the id to create vertex because it's incrementing the id automaticlly when we're creating new objects, 
-    /*
-     * so i've changed how we create vertex object and considered numVertices as the index of the vertex
-     */
-    public Vertex addVertex(T vertex)
+    public Vertex addVertex(T vertex, int vertexID)
     {
-        Vertex addition = new Vertex(vertex);
-        vertices[numVertices] = addition;
+        Vertex addition = new Vertex(vertex, vertexID);
+        vertices[vertexID] = addition;
         numVertices++;
-        System.out.println(vertices[numVertices].getvertexType().toString());
+        System.out.println(vertices[vertexID].toString());
         return addition;
     }
     public boolean hasVertex(int vertexID)
@@ -74,8 +72,7 @@ public class Graph<T> implements GraphInterface<T>
         }
         return false;
     }
-    // changed the arguments it takes - added type and data
-    public void addEdge(int fromID, int toID, T type, T data)
+    public void addEdge(int fromID, int toID, T data)
     {
         Vertex add1 = vertices[fromID];
         Vertex add2 = vertices[toID];
@@ -99,7 +96,7 @@ public class Graph<T> implements GraphInterface<T>
             int location2 = toID;
             adjList.get(location2).add(add1);
         }
-        Edge obj = new Edge(add1,add2,type, data);
+        Edge obj = new Edge(add1,add2,0);
         edges[edgeCount] = obj;
         edgeCount++;
     }
@@ -114,47 +111,49 @@ public class Graph<T> implements GraphInterface<T>
             System.out.println();
         }
     }
-	@Override
-	public boolean isFull() {
-		// TODO Auto-generated method stub
-		return false;
-	}
 
-	@Override
-	public boolean hasVertex(T vertex) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public int weightIs(T fromVertex, T toVertex) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-	@Override
-	public QueueInterface<T> getToVertices(T vertex) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	@Override
-	public void clearMarks() {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void markVertex(T vertex) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public boolean isMarked(T vertex) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	@Override
-	public T getUnmarked() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
+    public void input(String csvFile) throws FileNotFoundException
+    {
+        //Reading in vertices
+        File in = new File("vertices.csv");
+        Scanner inputFile = new Scanner(in);
+        String s;
+        String[] csv;
+        while(inputFile.hasNext())
+        {
+            s = inputFile.nextLine();
+            csv = s.split(",");
+        }
+        for (int i=0; i < csv.length; i +=2)
+        {
+            addVertex(csv[i],csv[i+1]);
+        }
+        //Reading in edges
+        File inp = newFile("edges.csv");
+        Scanner input = new Scanner(inp);
+        String s2;
+        String[] csv2;
+        while(input.hasNext())
+        {
+            s2 = input.nextLine();
+            csv2 = s2.split(",");
+        }
+        for(int i=0; i < csv2.length;i +=4)
+        {
+            addEdge(csv2[i],csv2[i+1],csv2[i+2],csv2[i+3]);
+        }
+    }
+    public void output()
+    {
+        List<List<String>> data = new List<List<String>>();
+        BufferedWriter writer = Files.newBufferedWriter(Paths.get("vertices.csv"));
+        writer.write("VertexType,VertexID");
+        writer.newLine();
+        for (List<String> d: data)
+        {
+            writer.write(String.join(",",d));
+            writer.newLine();
+        }
+        writer.close();
+    }
 }
