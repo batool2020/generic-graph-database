@@ -55,13 +55,13 @@ public class Graph<T> implements GraphInterface<T>
     /*
      * so i've changed how we create vertex object and considered numVertices as the index of the vertex
      */
-    public Vertex addVertex(T vertex)
+    public void addVertex(T vertex)
     {
         Vertex addition = new Vertex(vertex);
         vertices[numVertices] = addition;
         numVertices++;
         System.out.println(vertices[numVertices].getvertexType().toString());
-        return addition;
+       // return addition;
     }
     public boolean hasVertex(int vertexID)
     {
@@ -75,7 +75,7 @@ public class Graph<T> implements GraphInterface<T>
         return false;
     }
     // changed the arguments it takes - added type and data
-    public void addEdge(int fromID, int toID, T type, T data)
+    public void addEdge(int fromID, int toID, T data)
     {
         Vertex add1 = vertices[fromID];
         Vertex add2 = vertices[toID];
@@ -99,7 +99,7 @@ public class Graph<T> implements GraphInterface<T>
             int location2 = toID;
             adjList.get(location2).add(add1);
         }
-        Edge obj = new Edge(add1,add2,type, data);
+        Edge obj = new Edge(add1,add2, data);
         edges[edgeCount] = obj;
         edgeCount++;
     }
@@ -155,6 +155,16 @@ public class Graph<T> implements GraphInterface<T>
 	public T getUnmarked() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	@Override
+	public void addVertex(Vertex s0) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void addEdge(int fromVertex, int toVertex, int i) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

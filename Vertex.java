@@ -1,6 +1,4 @@
-
-package problem;
-
+package Problem;
 public class Vertex<T>
 {
 
@@ -27,11 +25,6 @@ public class Vertex<T>
     public int getvertexId()
     {
         return this.vertexId;
-    }
-    
-    public void setvertexType(T vertexType)
-    {
-    	this.vertexType = vertexType;
     }
 
 }
