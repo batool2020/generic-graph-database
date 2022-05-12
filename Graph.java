@@ -5,18 +5,21 @@ import java.util.ArrayList;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.Scanner;
+import java.util.List;
+import java.nio.*;
+import support.stacks.*;
 public class Graph<T> implements GraphInterface<T>
 {
     public static final int NULL_EDGE = 0;
     private static final int DEFCAP = 50;  // default capacity
     private boolean directed;
-    private boolean weighted;
     private int numVertices;
     private Vertex[] vertices = new Vertex[DEFCAP];
     private Edge[] edges = new Edge[DEFCAP];
     private ArrayList<ArrayList<Vertex>> adjList;
     private ArrayList<Integer> vertexIDs;
     private boolean[] marks;  // marks[i] is mark for vertices[i]
+    ArrayList<Integer> track = new ArrayList<Integer>();
     
     public Graph(boolean direct, boolean weight)
     {
@@ -32,14 +35,6 @@ public class Graph<T> implements GraphInterface<T>
         else
         {
             directed = false;
-        }
-        if(weight == true)
-        {
-            weighted = true;
-        }
-        else
-        {
-            weighted = false;
         }
     }
     public boolean isEmpty()
@@ -58,7 +53,6 @@ public class Graph<T> implements GraphInterface<T>
         Vertex addition = new Vertex(vertex, vertexID);
         vertices[vertexID] = addition;
         numVertices++;
-        System.out.println(vertices[vertexID].toString());
         return addition;
     }
     public boolean hasVertex(int vertexID)
@@ -72,12 +66,11 @@ public class Graph<T> implements GraphInterface<T>
         }
         return false;
     }
-    public void addEdge(int fromID, int toID, T data)
+    public void addEdge(int fromID, int toID, int data)
     {
         Vertex add1 = vertices[fromID];
         Vertex add2 = vertices[toID];
         int edgeCount = 0;
-        System.out.println(vertices[0].getvertexId());
         for(int i =0; i < numVertices; i++)
         {
             if (vertices[i].getvertexId() == fromID)
@@ -91,18 +84,25 @@ public class Graph<T> implements GraphInterface<T>
         }
         int location = fromID;
         adjList.get(location).add(add2);
+        Edge obj = new Edge(add1,add2,data);
+        int location2 = toID;
         if (directed == false)
         {
-            int location2 = toID;
             adjList.get(location2).add(add1);
+            vertices[location2].addToEdgeList(obj);
         }
-        Edge obj = new Edge(add1,add2,0);
         edges[edgeCount] = obj;
         edgeCount++;
+        vertices[location].addToEdgeList(obj);
+
+
+        //add to undirected version of list, needed to get min distances from source vertex in shortest path algo
+        vertices[location].addToUnEdgeList(obj);
+        vertices[location2].addToUnEdgeList(obj);
     }
     public void printGraph()
     {
-        for (int i = 0; i < adjList.size(); i++) {
+        for (int i = 0; i < numVertices; i++) {
             System.out.println("Adjacency list of " + "Vertex " + i);
             for (int j = 0; j < adjList.get(i).size(); j++) 
             {
@@ -112,48 +112,168 @@ public class Graph<T> implements GraphInterface<T>
         }
     }
 
-    public void input(String csvFile) throws FileNotFoundException
+    public void calculateShortest(int location)
     {
-        //Reading in vertices
-        File in = new File("vertices.csv");
-        Scanner inputFile = new Scanner(in);
-        String s;
-        String[] csv;
-        while(inputFile.hasNext())
+        int next = location;
+        this.vertices[next].setDistFromSource(0);
+        for (int i=0; i< numVertices; i++)
         {
-            s = inputFile.nextLine();
-            csv = s.split(",");
+            ArrayList<Edge> curr = this.vertices[next].getUndirectedEdges();
+            for (int j=0; j < curr.size(); j++)
+            {
+                int neigh = curr.get(j).getNeighborID(next);
+                if (!this.vertices[neigh].isVisited())
+                {
+                    int temp = this.vertices[next].getDistFromSource() + curr.get(j).getData();
+                    if (temp < vertices[neigh].getDistFromSource())
+                    {
+                        vertices[neigh].setDistFromSource(temp);
+                    }
+                }
+            }
+        
+        vertices[next].setVisited(true);
+        next = getNodeShortestDist();
         }
-        for (int i=0; i < csv.length; i +=2)
+
+        for(int i=0; i < numVertices; i ++)
         {
-            addVertex(csv[i],csv[i+1]);
-        }
-        //Reading in edges
-        File inp = newFile("edges.csv");
-        Scanner input = new Scanner(inp);
-        String s2;
-        String[] csv2;
-        while(input.hasNext())
-        {
-            s2 = input.nextLine();
-            csv2 = s2.split(",");
-        }
-        for(int i=0; i < csv2.length;i +=4)
-        {
-            addEdge(csv2[i],csv2[i+1],csv2[i+2],csv2[i+3]);
+            System.out.println("Shortest dist from node " + location +  " to node " + i + " is " + vertices[i].getDistFromSource());
         }
     }
-    public void output()
+
+    private int getNodeShortestDist()
     {
-        List<List<String>> data = new List<List<String>>();
-        BufferedWriter writer = Files.newBufferedWriter(Paths.get("vertices.csv"));
-        writer.write("VertexType,VertexID");
-        writer.newLine();
-        for (List<String> d: data)
+        int stored = 0;
+        int storedDist = 50;
+        for (int i=0; i < numVertices ;i++)
         {
-            writer.write(String.join(",",d));
-            writer.newLine();
+            int currDist = this.vertices[i].getDistFromSource();
+            if (!this.vertices[i].isVisited() && currDist < storedDist)
+            {
+                storedDist = currDist;
+                stored = i;
+            }
         }
-        writer.close();
+        return stored;
+    }
+
+    public void printShortestPath(int start, int destination)
+    {
+        if (adjList.get(start).isEmpty())
+        {
+            System.out.println("This vertex is not accesible");
+            return;
+        }
+        ArrayList<Integer> track2 = new ArrayList<Integer>();
+        //ArrayBoundedStack<Integer> st = new ArrayBoundedStack();
+        int begin = start;
+        int dist;
+        int check;
+        for(int i=0; i < numVertices; i++)
+        {
+            vertices[i].setVisited(false);
+        }
+        System.out.println("Shortest traversal from node " + begin + " to node " + destination + " by weight");
+        track2.add(begin);
+        while(begin != destination)
+        {
+            ArrayList<Edge> temp = vertices[begin].getEdges();
+            int min = Integer.MAX_VALUE;
+            for (int k=0; k < temp.size();k++)
+            {
+                check = temp.get(k).getNeighborID(begin);
+                if (!vertices[check].isVisited())
+                {
+                min = vertices[begin].getDistFromSource();
+                dist = vertices[check].getDistFromSource();
+                if (dist < min)
+                {
+                    min = dist;
+                    begin = temp.get(k).getNeighborID(begin);
+                }
+                vertices[check].setVisited(true);
+                }
+            }
+            track2.add(begin);
+        }
+        System.out.println(track2);
+    }
+
+
+
+
+    public void calculateShortestUnweighted(int location)
+    {
+        int next = location;
+        for(int k=0; k < numVertices; k++)
+        {
+            vertices[k].setVisited(false);
+        }
+        this.vertices[next].setDistFromSource(0);
+        for (int i=0; i< numVertices; i++)
+        {
+            ArrayList<Edge> curr = this.vertices[next].getUndirectedEdges();
+            for (int j=0; j < curr.size(); j++)
+            {
+                int neigh = curr.get(j).getNeighborID(next);
+                if (!this.vertices[neigh].isVisited())
+                {
+                    int temp = this.vertices[next].getDistFromSource() + 1;
+                    if (temp < vertices[neigh].getDistFromSource())
+                    {
+                        vertices[neigh].setDistFromSource(temp);
+                    }
+                }
+            }
+        vertices[next].setVisited(true);
+        next = getNodeShortestDist();
+        }
+
+        for(int i=0; i < numVertices; i ++)
+        {
+            System.out.println("Shortest dist from node " + location +  " to node " + i + " is " + vertices[i].getDistFromSource());
+        }
+    }
+    public void printShortestUnweighted(int start, int destination)
+    {
+        if (adjList.get(start).isEmpty())
+        {
+            System.out.println("This vertex is not accesible");
+            return;
+        }
+        ArrayList<Integer> track2 = new ArrayList<Integer>();
+        //ArrayBoundedStack<Integer> st = new ArrayBoundedStack();
+        int begin = start;
+        int dist;
+        int check;
+        for(int i=0; i < numVertices; i++)
+        {
+            vertices[i].setVisited(false);
+        }
+        System.out.println("Shortest traversal from node " + begin + " to node " + destination + " by least number of vertices");
+        track2.add(begin);
+        while(begin != destination)
+        {
+            ArrayList<Edge> temp = vertices[begin].getEdges();
+            int min = Integer.MAX_VALUE;
+            for (int k=0; k < temp.size();k++)
+            {
+                check = temp.get(k).getNeighborID(begin);
+                if (!vertices[check].isVisited())
+                {
+                min = vertices[begin].getDistFromSource();
+                dist = vertices[check].getDistFromSource();
+                if (dist < min)
+                {
+                    min = dist;
+                    begin = temp.get(k).getNeighborID(begin);
+                }
+                vertices[check].setVisited(true);
+                }
+            }
+            track2.add(begin);
+        }
+        System.out.println(track2);
     }
 }
