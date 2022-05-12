@@ -14,6 +14,7 @@ public class Graph<T> implements GraphInterface<T>
     private static final int DEFCAP = 50;  // default capacity
     private boolean directed;
     private int numVertices;
+    private int edgeCount;
     private Vertex[] vertices = new Vertex[DEFCAP];
     private Edge[] edges = new Edge[DEFCAP];
     private ArrayList<ArrayList<Vertex>> adjList;
@@ -21,7 +22,7 @@ public class Graph<T> implements GraphInterface<T>
     private boolean[] marks;  // marks[i] is mark for vertices[i]
     ArrayList<Integer> track = new ArrayList<Integer>();
     
-    public Graph(boolean direct, boolean weight)
+    public Graph(boolean direct)
     {
         adjList = new ArrayList<ArrayList<Vertex>>();
         for (int i=0; i < DEFCAP; i++)
@@ -70,7 +71,6 @@ public class Graph<T> implements GraphInterface<T>
     {
         Vertex add1 = vertices[fromID];
         Vertex add2 = vertices[toID];
-        int edgeCount = 0;
         for(int i =0; i < numVertices; i++)
         {
             if (vertices[i].getvertexId() == fromID)
@@ -90,6 +90,7 @@ public class Graph<T> implements GraphInterface<T>
         {
             adjList.get(location2).add(add1);
             vertices[location2].addToEdgeList(obj);
+            edgeCount++;
         }
         edges[edgeCount] = obj;
         edgeCount++;
@@ -115,6 +116,10 @@ public class Graph<T> implements GraphInterface<T>
     public void calculateShortest(int location)
     {
         int next = location;
+        for(int l =0 ; l < numVertices; l++)
+        {
+            vertices[l].setDistFromSource(Integer.MAX_VALUE);
+        }
         this.vertices[next].setDistFromSource(0);
         for (int i=0; i< numVertices; i++)
         {
@@ -160,7 +165,15 @@ public class Graph<T> implements GraphInterface<T>
 
     public void printShortestPath(int start, int destination)
     {
-        if (adjList.get(start).isEmpty())
+        int total = 0;
+        for (int m=0; m < edgeCount;m++)
+        {
+            if (edges[m].getEndID() == destination)
+            {
+                total++;
+            }
+        }
+        if(total ==0)
         {
             System.out.println("This vertex is not accesible");
             return;
@@ -209,6 +222,10 @@ public class Graph<T> implements GraphInterface<T>
         for(int k=0; k < numVertices; k++)
         {
             vertices[k].setVisited(false);
+        }
+        for(int l =0 ; l < numVertices; l++)
+        {
+            vertices[l].setDistFromSource(Integer.MAX_VALUE);
         }
         this.vertices[next].setDistFromSource(0);
         for (int i=0; i< numVertices; i++)
