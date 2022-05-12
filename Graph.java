@@ -19,7 +19,6 @@ public class Graph<T> implements GraphInterface<T>
     private Edge[] edges = new Edge[DEFCAP];
     private ArrayList<ArrayList<Vertex>> adjList;
     private ArrayList<Integer> vertexIDs;
-    private boolean[] marks;  // marks[i] is mark for vertices[i]
     ArrayList<Integer> track = new ArrayList<Integer>();
     
     public Graph(boolean direct)
@@ -90,16 +89,10 @@ public class Graph<T> implements GraphInterface<T>
         {
             adjList.get(location2).add(add1);
             vertices[location2].addToEdgeList(obj);
-            edgeCount++;
         }
         edges[edgeCount] = obj;
         edgeCount++;
         vertices[location].addToEdgeList(obj);
-
-
-        //add to undirected version of list, needed to get min distances from source vertex in shortest path algo
-        vertices[location].addToUnEdgeList(obj);
-        vertices[location2].addToUnEdgeList(obj);
     }
     public void printGraph()
     {
@@ -116,14 +109,14 @@ public class Graph<T> implements GraphInterface<T>
     public void calculateShortest(int location)
     {
         int next = location;
-        for(int l =0 ; l < numVertices; l++)
-        {
-            vertices[l].setDistFromSource(Integer.MAX_VALUE);
-        }
         this.vertices[next].setDistFromSource(0);
+        for(int k=0; k < numVertices; k++)
+        {
+            vertices[k].setVisited(false);
+        }
         for (int i=0; i< numVertices; i++)
         {
-            ArrayList<Edge> curr = this.vertices[next].getUndirectedEdges();
+            ArrayList<Edge> curr = this.vertices[next].getEdges();
             for (int j=0; j < curr.size(); j++)
             {
                 int neigh = curr.get(j).getNeighborID(next);
@@ -150,7 +143,7 @@ public class Graph<T> implements GraphInterface<T>
     private int getNodeShortestDist()
     {
         int stored = 0;
-        int storedDist = 50;
+        int storedDist = Integer.MAX_VALUE;
         for (int i=0; i < numVertices ;i++)
         {
             int currDist = this.vertices[i].getDistFromSource();
@@ -165,6 +158,7 @@ public class Graph<T> implements GraphInterface<T>
 
     public void printShortestPath(int start, int destination)
     {
+        try{
         int total = 0;
         for (int m=0; m < edgeCount;m++)
         {
@@ -211,6 +205,11 @@ public class Graph<T> implements GraphInterface<T>
             track2.add(begin);
         }
         System.out.println(track2);
+        }
+        catch (OutOfMemoryError e) 
+        {
+            System.err.println("No path possible.");
+        }
     }
 
 
@@ -223,14 +222,10 @@ public class Graph<T> implements GraphInterface<T>
         {
             vertices[k].setVisited(false);
         }
-        for(int l =0 ; l < numVertices; l++)
-        {
-            vertices[l].setDistFromSource(Integer.MAX_VALUE);
-        }
         this.vertices[next].setDistFromSource(0);
         for (int i=0; i< numVertices; i++)
         {
-            ArrayList<Edge> curr = this.vertices[next].getUndirectedEdges();
+            ArrayList<Edge> curr = this.vertices[next].getEdges();
             for (int j=0; j < curr.size(); j++)
             {
                 int neigh = curr.get(j).getNeighborID(next);
@@ -254,6 +249,7 @@ public class Graph<T> implements GraphInterface<T>
     }
     public void printShortestUnweighted(int start, int destination)
     {
+        try {
         if (adjList.get(start).isEmpty())
         {
             System.out.println("This vertex is not accesible");
@@ -292,5 +288,17 @@ public class Graph<T> implements GraphInterface<T>
             track2.add(begin);
         }
         System.out.println(track2);
+    }
+    catch (OutOfMemoryError e) 
+    {
+        System.err.println("No path possible.");
+    }
+    }
+    public void resetDistance()
+    {
+        for(int l =0 ; l < numVertices; l++)
+        {
+            vertices[l].setDistFromSource(Integer.MAX_VALUE);
+        }
     }
 }
